@@ -12,11 +12,23 @@ class DummyRequest(BaseModel):
     target_department: str | None
     priority: str
     confidence_score: float
+    channel: str = "Slack"
+    raw_text: str = "Test request text"
+    needs_clarification: bool = False
+    clarification_questions: list[str] = []
 
 
 def test_generate_reports(tmp_path):
     req1 = DummyRequest(id="REQ-001", category="автоматизація", target_department="маркетинг", priority="high", confidence_score=0.9)
-    req2 = DummyRequest(id="REQ-002", category="інтеграція", target_department=None, priority="low", confidence_score=0.8)
+    req2 = DummyRequest(
+        id="REQ-002",
+        category="інтеграція",
+        target_department=None,
+        priority="low",
+        confidence_score=0.7,
+        needs_clarification=True,
+        clarification_questions=["Які саме системи треба з'єднати?"]
+    )
 
     results = [
         ProcessingResult(request=req1, input_tokens=100, output_tokens=50),
@@ -39,3 +51,14 @@ def test_generate_reports(tmp_path):
 
     assert os.path.exists(output_dir / "output.json")
     assert os.path.exists(output_dir / "analytics.json")
+    assert os.path.exists(output_dir / "report.md")
+
+    # Verify report.md content
+    with open(output_dir / "report.md", "r", encoding="utf-8") as f:
+        content = f.read()
+        assert "# Звіт про класифікацію запитів" in content
+        assert "Кількість запитів за категоріями" in content
+        assert "Запити, що потребують уточнення" in content
+        assert "REQ-002" in content
+        assert "Які саме системи треба з'єднати?" in content
+        assert "Низька впевненість" in content

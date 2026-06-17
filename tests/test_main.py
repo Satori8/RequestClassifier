@@ -72,8 +72,8 @@ async def test_async_main_archives_output_files(
         
         await async_main()
         
-        # Verify that move was called for output.json and analytics.json, and remove was called for progress.json
-        assert mock_move.call_count == 2
+        # Verify that move was called for output.json, analytics.json, and report.md, and remove was called for progress.json
+        assert mock_move.call_count == 3
         mock_remove.assert_called_once_with("output/progress.json")
 
 

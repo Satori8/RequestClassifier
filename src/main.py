@@ -237,6 +237,13 @@ async def async_main():
                     shutil.move(analytics_json, dest_analytics)
                     logger.info(f"Analytics file successfully archived to {dest_analytics}")
 
+                # Archive report.md alongside the output
+                report_md = "output/report.md"
+                if os.path.exists(report_md):
+                    dest_report = os.path.join("completed", f"report_{timestamp}.md")
+                    shutil.move(report_md, dest_report)
+                    logger.info(f"Report file successfully archived to {dest_report}")
+
                 # Clear progress.json so the next run starts fresh, without
                 # incorrectly skipping all requests.
                 progress_json = "output/progress.json"

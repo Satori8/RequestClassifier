@@ -100,4 +100,62 @@ def generate_reports(results: list[ProcessingResult], output_dir: str = "output"
     with open(analytics_json_path, "w", encoding="utf-8") as f:
         json.dump(analytics, f, indent=2, ensure_ascii=False)
 
+    # 4. Save report.md containing aggregates and requests needing clarification
+    report_md_path = os.path.join(output_dir, "report.md")
+    with open(report_md_path, "w", encoding="utf-8") as f:
+        f.write("# Звіт про класифікацію запитів (Request Classification Report)\n\n")
+        f.write("## 📊 Агреговані показники (Aggregated Metrics)\n\n")
+        
+        f.write("### 📁 Кількість запитів за категоріями (Requests by Category)\n")
+        for cat, count in sorted(category_counts.items()):
+            f.write(f"- **{cat}**: {count} запитів\n")
+        f.write("\n")
+        
+        f.write("### 🏢 Кількість запитів за відділами (Requests by Department)\n")
+        for dept, count in sorted(department_counts.items()):
+            f.write(f"- **{dept}**: {count} запитів\n")
+        f.write("\n")
+        
+        f.write("### ⚡ Кількість запитів за пріоритетом (Requests by Priority)\n")
+        for priority, count in sorted(priority_counts.items()):
+            f.write(f"- **{priority}**: {count} запитів\n")
+        f.write("\n")
+        
+        f.write("---\n\n")
+        f.write("## ❓ Запити, що потребують уточнення (Requests Needing Clarification)\n\n")
+        f.write("У цей список включено запити, які мають прапорець `needs_clarification = True` або оцінку впевненості `confidence_score < 0.8`.\n\n")
+        
+        # Filter requests needing clarification
+        clarification_requests = []
+        for r in results:
+            if not r.processing_error and r.request:
+                req = r.request
+                needs_clar = req.needs_clarification
+                low_conf = req.confidence_score < 0.8
+                
+                if needs_clar or low_conf:
+                    reasons = []
+                    if needs_clar:
+                        reasons.append("За оцінкою LLM (needs_clarification = True)")
+                    if low_conf:
+                        reasons.append(f"Низька впевненість (score = {req.confidence_score} < 0.8)")
+                    
+                    clarification_requests.append({
+                        "id": req.id,
+                        "channel": req.channel,
+                        "raw_text": req.raw_text,
+                        "reason": " & ".join(reasons),
+                        "questions": ", ".join(req.clarification_questions) if req.clarification_questions else "Немає питань"
+                    })
+        
+        if clarification_requests:
+            f.write("| ID | Джерело | Текст запиту | Причина уточнення | Питання для уточнення |\n")
+            f.write("|---|---|---|---|---|\n")
+            for cr in clarification_requests:
+                # Escape pipe symbols in raw text to avoid breaking markdown table
+                clean_text = cr["raw_text"].replace("|", "\\|").replace("\n", " ")
+                f.write(f"| {cr['id']} | {cr['channel']} | {clean_text} | {cr['reason']} | {cr['questions']} |\n")
+        else:
+            f.write("Немає запитів, які потребують уточнення.\n")
+
     return analytics
