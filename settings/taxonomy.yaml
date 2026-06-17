@@ -35,6 +35,8 @@ departments:
     aliases: ["development", "dev", "engineering"]
   - id: "підтримка"
     aliases: ["support", "саппорт"]
+  - id: "адміністративний"
+    aliases: ["administration", "адміністрація"]    
 
 priority_rules:
   high:
