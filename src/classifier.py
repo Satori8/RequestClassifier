@@ -26,7 +26,7 @@ def log_retry_attempt(retry_state):
     reraise=True
 )
 async def _call_llm_with_retry(client: genai.Client, model_name: str, prompt: str, response_schema: Type[BaseModel], temperature: float, max_output_tokens: int):
-    response = await client.models.generate_content_async(
+    response = await client.aio.models.generate_content(
         model=model_name,
         contents=prompt,
         config=types.GenerateContentConfig(
