@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     GOOGLE_API_KEY: str
+    INPUT_CSV_PATH: str = "input_requests.csv"
     MODEL_NAME: str = "gemini-3.5-flash"
     TEMPERATURE: float = 0.0
     MAX_OUTPUT_TOKENS: int = 1024

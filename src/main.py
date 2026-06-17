@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import os
+import shutil
 import sys
 from typing import Any
 
@@ -75,7 +76,7 @@ async def async_main():
     response_schema = get_classified_request_model(categories, departments)
 
     # 4. Load input requests
-    requests = read_input_requests("input_requests.csv")
+    requests = read_input_requests(settings.INPUT_CSV_PATH)
     logger.info(f"Loaded {len(requests)} requests from CSV.")
 
     # Build full batch context (ID and summary)
@@ -149,6 +150,25 @@ async def async_main():
         settings.TELEGRAM_BOT_TOKEN,
         settings.TELEGRAM_CHAT_ID
     )
+
+    # 8. Move completed input file to completed/ folder if all requests are successfully processed
+    if requests and os.path.exists(settings.INPUT_CSV_PATH):
+        all_processed = all(progress_tracker.is_processed(r["id"]) for r in requests)
+        if all_processed:
+            from datetime import datetime
+            
+            try:
+                os.makedirs("completed", exist_ok=True)
+                base_name = os.path.basename(settings.INPUT_CSV_PATH)
+                name, ext = os.path.splitext(base_name)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                new_name = f"{name}_{timestamp}{ext}"
+                dest_path = os.path.join("completed", new_name)
+                
+                shutil.move(settings.INPUT_CSV_PATH, dest_path)
+                logger.info(f"Input file successfully completed and moved to {dest_path}")
+            except Exception as e:
+                logger.error(f"Failed to move completed input file: {e}")
 
     logger.info("Request Classifier Service run completed successfully.")
 

@@ -9,4 +9,5 @@ services:
     volumes:
       - ./output:/app/output
       - ./settings:/app/settings
+      - ./completed:/app/completed
       - ./input_requests.csv:/app/input_requests.csv

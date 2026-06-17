@@ -35,3 +35,39 @@ async def test_process_single_request_success():
         
         assert not res.processing_error
         progress_tracker.mark_completed.assert_called_once_with("REQ-001")
+
+
+@pytest.mark.asyncio
+@patch("src.main.read_input_requests")
+@patch("src.main.ProgressTracker")
+@patch("src.main.generate_reports")
+@patch("src.main.export_to_sheets")
+@patch("src.main.send_telegram_digest")
+@patch("src.main.genai.Client")
+@patch("src.main.shutil.move")
+@patch("src.main.os.path.exists")
+async def test_async_main_moves_file(
+    mock_exists, mock_move, mock_client, mock_telegram, mock_sheets, mock_reports, mock_tracker_cls, mock_read_requests
+):
+    from src.main import async_main
+    
+    # Mock requests and settings
+    mock_read_requests.return_value = [{"id": "REQ-001", "raw_text": "Test"}]
+    mock_tracker = MagicMock()
+    mock_tracker.is_processed.return_value = True
+    mock_tracker_cls.return_value = mock_tracker
+    
+    mock_exists.return_value = True
+    
+    with patch("src.main.Settings") as mock_settings_cls:
+        mock_settings = MagicMock()
+        mock_settings.INPUT_CSV_PATH = "dummy.csv"
+        mock_settings.SEMAPHORE_LIMIT = 5
+        mock_settings.RPM_LIMIT = 15
+        mock_settings.TPM_LIMIT = 1000000
+        mock_settings_cls.return_value = mock_settings
+        
+        await async_main()
+        
+        mock_move.assert_called_once()
+
