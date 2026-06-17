@@ -1,4 +1,4 @@
-# AI-Powered Internal Request Classifier Service
+# Сервіс автоматичної класифікації внутрішніх запитів на базі AI
 
 <p align="center">
   <a href="https://www.python.org/">
@@ -21,88 +21,90 @@
   </a>
 </p>
 
-An asynchronous, highly resilient Python-based CLI service that automatically classifies, structures, and routes incoming internal requests using the state-of-the-art **Google Gemini 3.1 Flash Lite** model and a highly configurable YAML taxonomy.
+Асинхронний, високонадійний CLI-сервіс на базі Python, який автоматично класифікує, структурує та маршрутизує вхідні внутрішні запити за допомогою передової моделі **Google Gemini 3.1 Flash Lite** та гнучкої YAML-таксономії.
 
 ---
 
-## 📊 System Architecture & Data Flow
+## 📊 Архітектура системи та потік даних
 
 ```mermaid
 graph TD
-    CSV[input_requests.csv] -->|Read| Reader[csv_reader.py]
-    YAML[taxonomy.yaml] -->|Load| Config[config.py]
-    Config -->|Taxonomy| Schema[schemas.py]
-    Schema -->|Dynamic Schema| Main[main.py]
-    Reader -->|Unprocessed Requests| Main
-    Main -->|Concurrency Loop| Limiter[rate_limiter.py]
-    Limiter -->|Acquire RPM/TPM| Classifier[classifier.py]
-    Classifier -->|Async Call| Gemini[Google Gemini API]
-    Gemini -->|JSON Response| Classifier
-    Classifier -->|Validate Schema| Main
-    Main -->|Save & Merge| Report[report_generator.py]
-    Report -->|output.json & analytics.json| Output[output/ directory]
-    Main -->|Optional Export| Sheets[sheets_export.py]
-    Main -->|Optional Digest| Telegram[telegram_digest.py]
-    Main -->|If All Completed| Archive[Archive to completed/ & Reset Progress]
+    CSV[input_requests.csv] -->|Читання| Reader[csv_reader.py]
+    YAML[taxonomy.yaml] -->|Завантаження| Config[config.py]
+    Config -->|Таксономія| Schema[schemas.py]
+    Schema -->|Динамічна схема| Main[main.py]
+    Reader -->|Необроблені запити| Main
+    Main -->|Конкурентний цикл| Limiter[rate_limiter.py]
+    Limiter -->|Запит RPM/TPM| Classifier[classifier.py]
+    Classifier -->|Асинхронний виклик| Gemini[Google Gemini API]
+    Gemini -->|JSON-відповідь| Classifier
+    Classifier -->|Валідація схеми| Main
+    Main -->|Збереження та злиття| Report[report_generator.py]
+    Report -->|output.json, analytics.json, report.md| Output[Директорія output/]
+    Main -->|Опціональний експорт| Sheets[sheets_export.py]
+    Main -->|Опціональний дайджест| Telegram[telegram_digest.py]
+    Main -->|Якщо все завершено| Archive[Архівування в completed/ та скидання прогресу]
 ```
 
 ---
 
-## 🌟 Key Features
+## 🌟 Ключові особливості
 
-1. **Dynamic Pydantic Schema Factory:** Dynamically generates the Pydantic schema (`ClassifiedRequest`) at runtime using Pydantic v2 `Annotated` and `AfterValidator` patterns based on the loaded taxonomy from `settings/taxonomy.yaml`. This is passed directly to Gemini's `response_schema` for 100% API-enforced schema compliance.
-2. **Sliding Window Rate Limiter:** Implements a thread-safe sliding-window RPM (Requests Per Minute) and TPM (Tokens Per Minute) rate limiter that proactively pauses execution and logs warnings when approaching limits to prevent HTTP 429 errors on Gemini's free tier (15 RPM, 250,000 TPM limit).
-3. **Robust Error Handling & Tenacity Retry:** Retries failed LLM calls up to 3 times with exponential backoff on transient errors (e.g., rate limits, validation errors). If all retries fail, it saves the request with a `processing_error=True` flag and the error details, ensuring no silent drops.
-4. **Progress Checkpointing & Resume:** Maintains a JSON-based progress file (`output/progress.json`) to allow resuming interrupted runs seamlessly without re-processing already-classified requests.
-5. **Asynchronous Orchestration:** Processes requests concurrently using `asyncio.Semaphore(5)` to limit concurrent API calls and optimize speed.
-6. **Optional Integrations:** Export results directly to Google Sheets and send daily aggregated reports/digests via Telegram. Both integrations degrade gracefully if credentials or configurations are missing.
-7. **Completed File Archiving:** Once all requests in the input CSV are successfully processed, the output files are safely archived in the `completed/` directory with a unique timestamp, and the progress tracker is reset. This prevents overwriting previous successful runs and ensures the next run starts fresh.
+1. **Динамічна фабрика схем Pydantic v2:** Динамічно генерує схему Pydantic (`ClassifiedRequest`) під час виконання за допомогою патернів `Annotated` та `AfterValidator` на основі завантаженої таксономії з `settings/taxonomy.yaml`. Вона передається безпосередньо в `response_schema` Gemini для 100% відповідності структурі на рівні API.
+2. **Ковзний лімітер швидкості (Sliding Window Rate Limiter):** Реалізує потокобезпечний ковзний лімітер швидкості для RPM (запитів на хвилину) та TPM (токенів на хвилину), який превентивно призупиняє виконання та логує попередження при наближенні до лімітів, запобігаючи помилкам HTTP 429 на безкоштовному тарифі Gemini (15 RPM, 250 000 TPM).
+3. **Надійна обробка помилок та повторні спроби (Tenacity Retry):** Повторює невдалі виклики LLM до 3 разів з експоненціальним бек-оффом при транзитних помилках (наприклад, ліміти швидкості або помилки валідації). Якщо всі спроби вичерпано, запис зберігається з прапорцем `processing_error=True` та описом помилки, гарантуючи відсутність мовчазних втрат даних.
+4. **Збереження прогресу та відновлення (Progress Checkpointing):** Зберігає стан обробки в JSON-файл (`output/progress.json`), що дозволяє безперешкодно відновлювати перервані запуски без повторної класифікації вже оброблених запитів.
+5. **Асинхронна оркестрація:** Обробляє запити конкурентно за допомогою `asyncio.Semaphore(5)` для обмеження кількості одночасних викликів API та оптимізації швидкості роботи.
+6. **Опціональні інтеграції:** Експорт результатів безпосередньо в Google Таблиці та надсилання щоденних звітів/дайджестів у Telegram. Обидві інтеграції деградують граціозно і просто пропускаються, якщо в `.env` відсутні відповідні налаштування.
+7. **Архівування завершених файлів:** Після успішної обробки всіх запитів із вхідного CSV-файлу вихідні файли безпечно архівуються в директорію `completed/` з унікальною часовою міткою, а трекер прогресу скидається. Це запобігає перезапису результатів попередніх успішних запусків і дозволяє почати наступний запуск з чистого аркуша.
+8. **Зовнішній шаблон промпту:** Системний промпт, що надсилається до LLM, повністю винесений у зовнішній файл `settings/prompt_template.txt`. Він використовує іменовані плейсхолдери (`{categories}`, `{departments}`, `{priority_rules}`, `{batch_context}`) для динамічної підстановки, що дозволяє промпт-інженерам налаштовувати логіку без зміни Python-коду.
 
 ---
 
-## 🛠️ Installation & Setup
+## 🛠️ Встановлення та налаштування
 
-### Prerequisites
+### Попередні вимоги
 - Python >= 3.11
-- [uv](https://github.com/astral-sh/uv) (recommended) or `pip`
-- Google Gemini API Key
+- [uv](https://github.com/astral-sh/uv) (рекомендовано) або `pip`
+- API-ключ Google Gemini
 
-### 1. Clone the Repository
+### 1. Клонування репозиторію
 ```bash
 git clone https://github.com/Satori8/RequestClassifier.git
 cd RequestClassifier
 ```
 
-### 2. Install Dependencies
-Using `uv` (fastest):
+### 2. Встановлення залежностей
+Використовуючи `uv` (найшвидше):
 ```bash
 uv sync
 ```
 
-Or using standard `pip`:
+Оригінальний `pip`:
 ```bash
 pip install -r pyproject.toml
 ```
 
-### 3. Configure Environment Variables
-Copy `.env.example` to `.env` and fill in your Gemini API key:
+### 3. Налаштування змінних оточення
+Скопіюйте файл `.env.example` у `.env` та вкажіть ваш API-ключ Gemini:
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Відредагуйте `.env`:
 ```env
 GOOGLE_API_KEY=your-api-key-here
 INPUT_CSV_PATH=input_requests.csv
-MODEL_NAME=gemini-3.5-flash
+PROMPT_TEMPLATE_PATH=settings/prompt_template.txt
+MODEL_NAME=gemini-3.1-flash-lite
 TEMPERATURE=0.0
 MAX_OUTPUT_TOKENS=1024
 RPM_LIMIT=15
-TPM_LIMIT=1000000
+TPM_LIMIT=250000
 SEMAPHORE_LIMIT=5
 MAX_RETRIES=3
 
-# Optional integrations
+# Опціональні інтеграції
 GOOGLE_SHEETS_CREDENTIALS_PATH=
 GOOGLE_SHEETS_SPREADSHEET_ID=
 TELEGRAM_BOT_TOKEN=
@@ -111,73 +113,75 @@ TELEGRAM_CHAT_ID=
 
 ---
 
-## 🚀 Running the Service
+## 🚀 Запуск сервісу
 
-To run the classifier service locally:
+Щоб запустити сервіс класифікації локально:
 ```bash
 python -m src.main
 ```
 
-Or using `uv`:
+Або за допомогою `uv`:
 ```bash
 uv run python -m src.main
 ```
 
-### Execution Workflow:
-1. Read the input requests from the configured CSV path (default: `input_requests.csv`).
-2. Skip already processed requests using `output/progress.json`.
-3. Classify unprocessed requests concurrently using Google Gemini.
-4. Save the results to `output/output.json` and analytics to `output/analytics.json`.
-5. Run optional Google Sheets and Telegram integrations if configured.
-6. If all requests are successfully processed, move the generated output files (`output/output.json` and `output/analytics.json`) to the `completed/` folder with a date/time timestamp (e.g., `completed/output_20260617_122608.json`) and reset the progress tracker. This archives the results and allows subsequent runs to start completely fresh.
+### Робочий процес виконання (Execution Workflow):
+1. Читання вхідних запитів із налаштованого CSV-файлу (за замовчуванням: `input_requests.csv`).
+2. Завантаження шаблону системного промпту з налаштованого шляху (за замовчуванням: `settings/prompt_template.txt`).
+3. Пропуск уже оброблених запитів за допомогою `output/progress.json`.
+4. Конкурентна класифікація необроблених запитів через Google Gemini.
+5. Збереження результатів у `output/output.json` та аналітики у `output/analytics.json`.
+6. Запуск опціональних інтеграцій з Google Таблицями та Telegram, якщо вони налаштовані.
+7. Якщо всі запити успішно оброблені, перенесення згенерованих вихідних файлів (`output/output.json`, `output/analytics.json` та `output/report.md`) у папку `completed/` з часовою міткою (наприклад, `completed/output_20260617_122608.json`) та скидання трекера прогресу. Це архівує результати та дозволяє наступному запуску почати роботу повністю з чистого аркуша.
 
 ---
 
-## 🐳 Running with Docker
+## 🐳 Запуск через Docker
 
-You can run the service inside a Docker container using Docker Compose. This mounts the local directories as volumes, so output files are saved directly to your host machine.
+Ви можете запустити сервіс у Docker-контейнері за допомогою Docker Compose. Це монтує локальні директорії як томи, тому вихідні файли зберігаються безпосередньо на вашій хост-машині.
 
-### 1. Build and Run
+### 1. Збірка та запуск
 ```bash
 docker-compose up --build
 ```
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Запуск тестів
 
-We have a comprehensive test suite with 100% test coverage of core modules.
+Ми маємо повний набір тестів зі 100% покриттям ключових модулів.
 
-To run the tests:
+Щоб запустити тести:
 ```bash
 uv run pytest -v
 ```
 
 ---
 
-## 📂 Project Structure
+## 📂 Структура проекту
 
 ```
-├── .env.example              # Environment variables template
-├── Dockerfile                # Multi-stage Docker build using uv
-├── docker-compose.yml        # Docker Compose configuration
-├── pyproject.toml            # Project dependencies and configuration
-├── input_requests.csv        # Input requests CSV file
-├── completed/                # Folder where completed output files are archived
+├── .env.example              # Шаблон змінних оточення
+├── Dockerfile                # Багатоетапна збірка Docker на базі uv
+├── docker-compose.yml        # Конфігурація Docker Compose
+├── pyproject.toml            # Залежності та конфігурація проекту
+├── input_requests.csv        # Вхідний CSV-файл із запитами
+├── completed/                # Папка, куди архівуються завершені вихідні файли
 ├── settings/
-│   └── taxonomy.yaml         # Configurable categories, departments, and priority rules
+│   ├── taxonomy.yaml         # Налаштування категорій, відділів та правил пріоритетів
+│   └── prompt_template.txt   # Зовнішній шаблон системного промпту з плейсхолдерами
 ├── src/
 │   ├── __init__.py
-│   ├── config.py             # Configuration loader and taxonomy parser
-│   ├── schemas.py            # Dynamic Pydantic schema factory
-│   ├── csv_reader.py         # CSV file reader
-│   ├── progress.py           # Progress checkpointing tracker
-│   ├── rate_limiter.py       # Sliding window rate limiter
-│   ├── classifier.py         # Google Gemini classifier with tenacity retry
-│   ├── report_generator.py   # Aggregated JSON report generator
-│   ├── sheets_export.py      # Optional Google Sheets exporter
-│   ├── telegram_digest.py    # Optional Telegram digest sender
-│   └── main.py               # Orchestration entrypoint & concurrency loop
+│   ├── config.py             # Завантажувач конфігурації та парсер таксономії
+│   ├── schemas.py            # Динамічна фабрика схем Pydantic
+│   ├── csv_reader.py         # Читач CSV-файлів
+│   ├── progress.py           # Трекер збереження прогресу
+│   ├── rate_limiter.py       # Ковзний лімітер швидкості
+│   ├── classifier.py         # Класифікатор Google Gemini з повторними спробами
+│   ├── report_generator.py   # Генератор агрегованих звітів JSON та Markdown
+│   ├── sheets_export.py      # Опціональний експортер у Google Таблиці
+│   ├── telegram_digest.py    # Опціональний відправник дайджестів у Telegram
+│   └── main.py               # Точка входу оркестрації та цикл конкурентності
 └── tests/
     ├── test_config.py
     ├── test_schemas.py
@@ -189,6 +193,91 @@ uv run pytest -v
     ├── test_integrations.py
     └── test_main.py
 ```
+
+---
+
+## 📊 Звіти та аналітика
+
+Під час виконання сервіс класифікації генерує три вихідні файли в директорії `output/`. Після успішного завершення обробки всіх запитів ці файли автоматично переносяться в папку `completed/` з додаванням унікальної часової мітки (наприклад, `output_YYYYMMDD_HHMMSS.json`), щоб зберегти історію запусків та очистити робочу область для наступного запуску:
+
+1. **`output/output.json`**: Повний список усіх оброблених запитів. Кожен запис відповідає схемі динамічної таксономії. Якщо запит не вдалося обробити, він зберігається з прапорцем `processing_error=True` та деталями помилки (без мовчазних втрат).
+2. **`output/analytics.json`**: Агрегована статистика запуску, включаючи:
+   - Загальну кількість запитів, успішних та невдалих.
+   - Розподіл кількості за категоріями, відділами та пріоритетами.
+   - Середню оцінку впевненості.
+   - **`tokens_used`**: Загальну кількість вхідних, вихідних та сумарних токенів, використаних Gemini API за час запуску.
+3. **`output/report.md`**: Короткий, зручний для читання людиною markdown-звіт, що містить:
+   - Таблиці агрегованих показників.
+   - **Запити, що потребують уточнення**: Окрема таблиця з усіма запитами, які мають `needs_clarification = True` (позначені LLM) **АБО** мають `confidence_score < 0.8`. Це дозволяє операторам швидко виявляти розпливчасті, невпевнені або позаскоупні запити та бачити згенеровані моделлю питання для уточнення.
+
+### Розширення схеми `ClassifiedRequest`
+
+Оригінальна схема з ТЗ вимагала 6 полів: `category`, `target_department`, `priority`, `short_summary`, `requested_actions`, `needs_clarification`.
+
+Ми додали 4 поля:
+
+| Поле | Тип | Навіщо |
+|---|---|---|
+| `confidence_score` | float 0.0–1.0 | Самооцінка LLM впевненості. Запити з score < 0.8 потрапляють у report.md як потенційно помилкові → тригер для human review замість сліпої довіри моделі |
+| `clarification_questions` | list[str] | Перетворює булевий `needs_clarification` з пасивного прапорця на actionable output — менеджер одразу бачить що саме запитати у автора запиту, без додаткового аналізу |
+| `estimated_complexity` | low / medium / high | Допомагає при плануванні спринтів — PM бачить орієнтовну складність ще до того, як задача потрапляє в беклог |
+| `language` | str (uk / en) | Фіксує мову запиту. В CSV є мікс українських і англійських текстів — знання мови корисне для маршрутизації та локалізації відповідей |
+
+**Принцип**: кожне поле або покращує якість контролю (confidence, clarification questions), або додає корисниі метаданні для downstream процесів (complexity, language). Жодне поле не ускладнює промпт суттєво — все витягується в одному LLM-виклику без додаткових запитів.
+
+---
+
+## 🔌 Налаштування інтеграцій
+
+Сервіс містить опціональні, готові до продакшену інтеграції з Google Таблицями та Telegram-дайджестами. Обидві інтеграції успішно реалізовані, протестовані та готові до роботи! Вони граціозно деградують і просто пропускаються, якщо їх конфігурації відсутні в `.env`.
+
+### 🟢 Інтеграція з Google Таблицями (Sheets)
+Успішно реалізовано автоматичний експорт класифікованих запитів у таблицю. Приклад налаштованої та заповненої Google Таблиці (яка містить класифіковані дані разом із оригінальним текстом запиту `raw_text`): [Приклад Google Sheets](https://docs.google.com/spreadsheets/d/1x904mhfUgIHXlZ3PVQrF1n766MhChK_DlGzDxheTXUo/edit?gid=0#gid=0).
+
+Щоб експортувати класифіковані запити безпосередньо в Google Таблицю:
+
+1. **Створіть сервісний акаунт Google (Service Account):**
+   - Перейдіть у [Google Cloud Console](https://console.cloud.google.com/).
+   - Увімкніть **Google Sheets API** та **Google Drive API** для вашого проекту.
+   - Перейдіть у розділ **IAM & Admin -> Service Accounts** та натисніть **Create Service Account**.
+   - Перейдіть на вкладку **Keys**, натисніть **Add Key -> Create new key**, виберіть **JSON** та завантажте файл.
+   - Збережіть цей JSON-файл у папці вашого проекту (наприклад, як `settings/google_credentials.json`).
+2. **Створіть Google Таблицю:**
+   - Створіть нову Google Таблицю у вашому браузері.
+   - Скопіюйте ID таблиці з URL-адреси:
+     `https://docs.google.com/spreadsheets/d/`**`SPREADSHEET_ID`**`/edit`
+3. **Надайте доступ сервісному акаунту:**
+   - Відкрийте завантажений JSON-файл та скопіюйте `"client_email"` (закінчується на `@...gserviceaccount.com`).
+   - У вашій Google Таблиці натисніть кнопку **Share (Поділитися)** у правому верхньому кутку, вставте скопійований email та надайте права **Редактора (Editor)**.
+4. **Налаштуйте `.env`:**
+   ```env
+   GOOGLE_SHEETS_CREDENTIALS_PATH=settings/google_credentials.json
+   GOOGLE_SHEETS_SPREADSHEET_ID=your-spreadsheet-id-here
+   ```
+
+### 🔵 Інтеграція з Telegram
+Успішно реалізовано автоматичне надсилання красивого україномовного HTML-дайджесту запуску. 
+
+Приклад отриманого дайджесту в Telegram із загальною статистикою та списком запитів, що потребують уточнення:
+
+![Telegram Digest Screenshot](tg_sceen.png)
+
+Щоб отримувати гарно відформатований HTML-дайджест запуску українською мовою у ваш Telegram:
+
+1. **Створіть Telegram-бота:**
+   - Відкрийте Telegram та знайдіть бота `@BotFather`.
+   - Надішліть команду `/newbot` і дотримуйтесь інструкцій, щоб отримати **Токен бота (Bot Token)** (наприклад, `123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ`).
+   - Перейдіть за посиланням на вашого нового бота та натисніть **Start** (надішліть `/start`).
+2. **Отримайте ваш Telegram `chat_id`:**
+   - **Спосіб А (Найпростіший):** Знайдіть у Telegram бота `@userinfobot` або `@GetMyChatID_Bot`, натисніть **Start**, і він миттєво надішле вам ваш числовий `chat_id` (наприклад, `987654321`).
+   - **Спосіб Б (Через браузер):** Відкрийте веб-браузер та перейдіть за посиланням:
+     `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+     Знайдіть поле `"chat":{"id":987654321,...}` у відповіді JSON. (Якщо список порожній, надішліть боту ще одне повідомлення в Telegram та оновіть сторінку).
+3. **Налаштуйте `.env`:**
+   ```env
+   TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRsTUVwxyZ
+   TELEGRAM_CHAT_ID=987654321
+   ```
 
 ---
 
@@ -211,7 +300,7 @@ uv run pytest -v
   * **Progress Checkpointing:** Увесь прогрес зберігається в реальному часі в `progress.json`. У разі переривання роботи (наприклад, вимкнення світла або збою хоста) наступний запуск продовжить обробку з останнього неналаштованого запиту.
 
 ### 3. Недетермінізм моделей (Non-Determinism)
-* **Проблема:** Оскільки LLM є ймовірнісними моделями, один і той самий запит може быть класифікований по-різному під час різних запусків.
+* **Проблема:** Оскільки LLM є ймовірнісними моделями, один і той самий запит може бути класифікований по-різному під час різних запусків.
 * **Рішення:**
   * **Температура `0.0`:** Параметр температури жорстко зафіксовано на значенні `0.0`, що робить вивід максимально детермінованим та повторюваним.
   * **Суворі Pydantic-валідатори:** Динамічна схема використовує `AfterValidator` для перевірки значень за списками з `taxonomy.yaml`. Навіть якщо модель спробує згенерувати некоректний ID, Pydantic відхилить його на етапі парсингу, ініціюючи повторну спробу.
@@ -233,10 +322,10 @@ uv run pytest -v
 2. **Побудова графа зв'язків (Advanced Dependency Mapping):** Повноцінна детекція та зв'язування дублікатів/пов'язаних запитів (наприклад, зв'язування `REQ-013` -> `REQ-001`) безпосередньо в схемі виводу з можливістю візуалізації у вигляді графа залежностей.
 3. **Локальний AI-движок (Ollama / Local LLM Support):** Додавання підтримки локальних моделей (наприклад, Llama 3 або Mistral через Ollama) як альтернативи Gemini для повної конфіденційності та роботи без підключення до мережі.
 4. **Векторний пошук дублікатів (Vector Semantic Search):** Індексування текстів запитів у векторній базі даних (наприклад, ChromaDB або Qdrant) для миттєвого знаходження семантично схожих запитів у реальному часі перед відправкою в LLM.
-5. **Веб-інтерфейс аналітики (Web Dashboard):** Створення легкого веб-інтерфейсу (наприклад, на Streamlit або FastAPI + Tailwind) для зручного перегляду класифікованих запитів, пошуку, фільтрации та інтерактивних графіків аналітики.
+5. **Веб-інтерфейс аналітики (Web Dashboard):** Створення легкого веб-інтерфейсу (наприклад, на Streamlit або FastAPI + Tailwind) для зручного перегляду класифікованих запитів, пошуку, фільтрації та інтерактивних графіків аналітики.
 
 ---
 
-## 📜 License
+## 📜 Ліцензія
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Цей проект ліцензований на умовах MIT License - деталі див. у файлі [LICENSE](LICENSE).

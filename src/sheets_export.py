@@ -39,7 +39,7 @@ def export_to_sheets(results: list[ProcessingResult], credentials_path: str | No
 
         # Prepare headers and rows for the spreadsheet
         headers = [
-            "id", "channel", "timestamp", "category", "target_department", 
+            "id", "channel", "timestamp", "raw_text", "category", "target_department", 
             "priority", "short_summary", "requested_actions", "needs_clarification", 
             "confidence_score", "estimated_complexity", "language"
         ]
@@ -58,6 +58,7 @@ def export_to_sheets(results: list[ProcessingResult], credentials_path: str | No
                     req.id,
                     req.channel,
                     req.timestamp,
+                    req.raw_text,
                     req.category,
                     req.target_department or "",
                     req.priority,
