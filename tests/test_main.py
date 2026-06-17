@@ -46,8 +46,9 @@ async def test_process_single_request_success():
 @patch("src.main.genai.Client")
 @patch("src.main.shutil.move")
 @patch("src.main.os.path.exists")
-async def test_async_main_moves_file(
-    mock_exists, mock_move, mock_client, mock_telegram, mock_sheets, mock_reports, mock_tracker_cls, mock_read_requests
+@patch("src.main.os.remove")
+async def test_async_main_archives_output_files(
+    mock_remove, mock_exists, mock_move, mock_client, mock_telegram, mock_sheets, mock_reports, mock_tracker_cls, mock_read_requests
 ):
     from src.main import async_main
     
@@ -69,5 +70,8 @@ async def test_async_main_moves_file(
         
         await async_main()
         
-        mock_move.assert_called_once()
+        # Verify that move was called for output.json and analytics.json, and remove was called for progress.json
+        assert mock_move.call_count == 2
+        mock_remove.assert_called_once_with("output/progress.json")
+
 

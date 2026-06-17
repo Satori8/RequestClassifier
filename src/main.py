@@ -151,24 +151,38 @@ async def async_main():
         settings.TELEGRAM_CHAT_ID
     )
 
-    # 8. Move completed input file to completed/ folder if all requests are successfully processed
-    if requests and os.path.exists(settings.INPUT_CSV_PATH):
+    # 8. Move output files to completed/ folder and reset progress if all requests are successfully processed
+    if requests:
         all_processed = all(progress_tracker.is_processed(r["id"]) for r in requests)
         if all_processed:
             from datetime import datetime
             
             try:
                 os.makedirs("completed", exist_ok=True)
-                base_name = os.path.basename(settings.INPUT_CSV_PATH)
-                name, ext = os.path.splitext(base_name)
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                new_name = f"{name}_{timestamp}{ext}"
-                dest_path = os.path.join("completed", new_name)
                 
-                shutil.move(settings.INPUT_CSV_PATH, dest_path)
-                logger.info(f"Input file successfully completed and moved to {dest_path}")
+                # Move output.json
+                output_json = "output/output.json"
+                if os.path.exists(output_json):
+                    dest_output = os.path.join("completed", f"output_{timestamp}.json")
+                    shutil.move(output_json, dest_output)
+                    logger.info(f"Output file successfully completed and archived to {dest_output}")
+                
+                # Move analytics.json
+                analytics_json = "output/analytics.json"
+                if os.path.exists(analytics_json):
+                    dest_analytics = os.path.join("completed", f"analytics_{timestamp}.json")
+                    shutil.move(analytics_json, dest_analytics)
+                    logger.info(f"Analytics file successfully archived to {dest_analytics}")
+                
+                # Clear progress.json to allow a fresh run next time
+                progress_json = "output/progress.json"
+                if os.path.exists(progress_json):
+                    os.remove(progress_json)
+                    logger.info("Progress tracker reset for the next run.")
+                    
             except Exception as e:
-                logger.error(f"Failed to move completed input file: {e}")
+                logger.error(f"Failed to archive completed output files: {e}")
 
     logger.info("Request Classifier Service run completed successfully.")
 

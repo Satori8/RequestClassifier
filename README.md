@@ -10,7 +10,7 @@ An asynchronous Python-based CLI service that automatically classifies and struc
 4. **Progress Checkpointing:** Maintains a JSON-based progress file (`output/progress.json`) to allow resuming interrupted runs seamlessly without re-processing already-classified requests.
 5. **Asynchronous Orchestration:** Processes requests concurrently using `asyncio.Semaphore(5)` to limit concurrent API calls and optimize speed.
 6. **Optional Integrations:** Export results directly to Google Sheets and send daily aggregated reports/digests via Telegram. Both integrations degrade gracefully if credentials or configurations are missing.
-7. **Completed File Archiving:** Once all requests in the input CSV are successfully processed, the input file is safely archived in the `completed/` directory with a unique timestamp, keeping the input directory clean and avoiding accidental reprocessing.
+7. **Completed File Archiving:** Once all requests in the input CSV are successfully processed, the output files are safely archived in the `completed/` directory with a unique timestamp, and the progress tracker is reset. This prevents overwriting previous successful runs and ensures the next run starts fresh.
 
 ---
 
@@ -76,7 +76,7 @@ The service will:
 3. Classify unprocessed requests concurrently using Google Gemini.
 4. Save the results to `output/output.json` and analytics to `output/analytics.json`.
 5. Run optional Google Sheets and Telegram integrations if configured.
-6. If all requests are successfully processed, move the input file to the `completed/` folder with a date/time timestamp (e.g., `completed/input_requests_20260617_122608.csv`) to prevent accidental overwriting or re-processing in subsequent runs.
+6. If all requests are successfully processed, move the generated output files (`output/output.json` and `output/analytics.json`) to the `completed/` folder with a date/time timestamp (e.g., `completed/output_20260617_122608.json`) and reset the progress tracker. This archives the results and allows subsequent runs to start completely fresh.
 
 ---
 
@@ -110,7 +110,7 @@ uv run pytest -v
 ├── docker-compose.yml        # Docker Compose configuration
 ├── pyproject.toml            # Project dependencies and configuration
 ├── input_requests.csv        # Input requests CSV file
-├── completed/                # Folder where completed input files are moved/archived
+├── completed/                # Folder where completed output files are archived
 ├── settings/
 │   └── taxonomy.yaml         # Configurable categories, departments, and priority rules
 ├── src/
