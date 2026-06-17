@@ -7,6 +7,21 @@ from src.schemas import ProcessingResult
 logger = logging.getLogger(__name__)
 
 def export_to_sheets(results: list[ProcessingResult], credentials_path: str | None, spreadsheet_id: str | None) -> bool:
+    """Export classified results to a Google Sheets spreadsheet.
+
+    Optional integration: silently skips (with a warning log) if credentials
+    or spreadsheet ID are not configured. Appends rows to the first worksheet,
+    creating a header row if the sheet is empty.
+
+    Args:
+        results: List of ProcessingResult objects to export.
+        credentials_path: Path to the GCP service account JSON file, or None.
+        spreadsheet_id: Google Sheets document ID, or None.
+
+    Returns:
+        True if export succeeded (or if skipped due to missing config is not
+        considered failure — it returns False for actual errors only).
+    """
     if not credentials_path or not spreadsheet_id:
         logger.warning("Google Sheets credentials path or spreadsheet ID is missing. Skipping export.")
         return False
@@ -22,7 +37,7 @@ def export_to_sheets(results: list[ProcessingResult], credentials_path: str | No
         if not worksheet:
             worksheet = sh.get_worksheet(0)
 
-        # Prepare headers and rows
+        # Prepare headers and rows for the spreadsheet
         headers = [
             "id", "channel", "timestamp", "category", "target_department", 
             "priority", "short_summary", "requested_actions", "needs_clarification", 
@@ -34,6 +49,7 @@ def export_to_sheets(results: list[ProcessingResult], credentials_path: str | No
         if not existing_values:
             worksheet.append_row(headers)
 
+        # Build data rows from successful results only (errors are not exported)
         rows = []
         for r in results:
             if not r.processing_error and r.request:
@@ -52,7 +68,8 @@ def export_to_sheets(results: list[ProcessingResult], credentials_path: str | No
                     req.estimated_complexity,
                     req.language
                 ])
-                
+
+        # Append all rows in a single batch API call for efficiency
         if rows:
             worksheet.append_rows(rows)
             logger.info(f"Successfully exported {len(rows)} rows to Google Sheets.")

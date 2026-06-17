@@ -5,9 +5,28 @@ from src.schemas import ProcessingResult
 
 
 def generate_reports(results: list[ProcessingResult], output_dir: str = "output") -> dict[str, Any]:
+    """Generate output.json and analytics.json from all processing results.
+
+    Produces two output files in the specified directory:
+    - output.json: Serialized list of all classified requests (or error records).
+      Every input request produces exactly one entry — no silent drops.
+    - analytics.json: Aggregated statistics including counts by category,
+      department, priority, and average confidence score.
+
+    Args:
+        results: List of ProcessingResult objects from all requests.
+        output_dir: Directory path for output files. Created if it doesn't exist.
+
+    Returns:
+        Dictionary containing summary analytics (total, successful, failed,
+        average confidence, counts by category/department/priority).
+    """
     os.makedirs(output_dir, exist_ok=True)
 
     # 1. Save main output.json containing all results (no silent drops)
+    # --- Serialize all results to output.json ---
+    # Every ProcessingResult becomes an entry: successful requests are dumped
+    # via model_dump(), failed ones carry error metadata.
     serialized_results = []
     for res in results:
         if res.processing_error:
@@ -24,7 +43,9 @@ def generate_reports(results: list[ProcessingResult], output_dir: str = "output"
     with open(output_json_path, "w", encoding="utf-8") as f:
         json.dump(serialized_results, f, indent=2, ensure_ascii=False)
 
-    # 2. Compute aggregations
+    # --- Compute aggregations ---
+    # Tally successful vs failed, and aggregate counts by category, department,
+    # priority, and average confidence score for the analytics dashboard.
     total_processed = len(results)
     successful = sum(1 for r in results if not r.processing_error)
     failed = total_processed - successful
@@ -51,6 +72,7 @@ def generate_reports(results: list[ProcessingResult], output_dir: str = "output"
 
     avg_confidence = total_confidence / confidence_count if confidence_count > 0 else 0.0
 
+    # Build the analytics dictionary with summary and breakdowns
     analytics = {
         "summary": {
             "total_requests": total_processed,
