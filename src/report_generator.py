@@ -72,13 +72,23 @@ def generate_reports(results: list[ProcessingResult], output_dir: str = "output"
 
     avg_confidence = total_confidence / confidence_count if confidence_count > 0 else 0.0
 
+    # Aggregate token usage across all results (successful or failed)
+    total_input_tokens = sum(r.input_tokens for r in results if r.input_tokens is not None)
+    total_output_tokens = sum(r.output_tokens for r in results if r.output_tokens is not None)
+    total_tokens = total_input_tokens + total_output_tokens
+
     # Build the analytics dictionary with summary and breakdowns
     analytics = {
         "summary": {
             "total_requests": total_processed,
             "successfully_processed": successful,
             "failed_processing": failed,
-            "average_confidence_score": round(avg_confidence, 4)
+            "average_confidence_score": round(avg_confidence, 4),
+            "tokens_used": {
+                "input_tokens": total_input_tokens,
+                "output_tokens": total_output_tokens,
+                "total_tokens": total_tokens
+            }
         },
         "by_category": category_counts,
         "by_department": department_counts,

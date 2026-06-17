@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Any, Type
 from pydantic import BaseModel, ValidationError
 from google import genai
@@ -79,19 +80,20 @@ async def _call_llm_with_retry(
     return response
 
 
-def build_system_prompt(taxonomy: dict[str, Any], batch_context: str) -> str:
+def build_system_prompt(taxonomy: dict[str, Any], batch_context: str, template_path: str = "settings/prompt_template.txt") -> str:
     """Build the system prompt for the LLM by injecting taxonomy definitions.
 
     Dynamically renders categories, departments, and priority rules from the
-    taxonomy dict into a structured prompt. Also includes the full batch context
-    (all request IDs and summaries) so the LLM can detect duplicates and
-    cross-references between requests.
+    taxonomy dict, loads the prompt template from the specified text file,
+    and formats it with the dynamic taxonomy rules and batch context.
 
     Args:
         taxonomy: Parsed taxonomy dictionary with 'categories', 'departments',
             and 'priority_rules' keys.
         batch_context: Newline-separated string of all request IDs and raw text
             summaries in the current batch.
+        template_path: Path to the prompt template text file.
+            Defaults to "settings/prompt_template.txt".
 
     Returns:
         Fully formatted system prompt string ready to prepend to a user prompt.
@@ -108,28 +110,17 @@ def build_system_prompt(taxonomy: dict[str, Any], batch_context: str) -> str:
     for level, rule in taxonomy.get("priority_rules", {}).items():
         priority_rules_str += f"- Level '{level}': {rule['description']}. Markers: {rule.get('markers', [])}\n"
 
-    return f"""You are an AI request classifier for an internal AI unit at a digital agency.
-Your task is to classify and structure the incoming internal requests.
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(f"Prompt template file not found at {template_path}")
+    with open(template_path, "r", encoding="utf-8") as f:
+        template = f.read()
 
-### Taxonomy Categories:
-{categories_str}
-
-### Target Departments:
-{departments_str}
-
-### Priority Rules:
-{priority_rules_str}
-
-### Full Batch Context (for duplicate/relation detection):
-Use this list of all requests in the current batch to detect duplicates or related requests.
-{batch_context}
-
-### Output Rules:
-1. `short_summary`, `requested_actions`, and `clarification_questions` MUST be in Ukrainian.
-2. `category` and `target_department` MUST strictly match the taxonomy IDs.
-3. `needs_clarification` is true if the request is vague, missing context, or out-of-scope. If true, provide 1-3 `clarification_questions`. If false, `clarification_questions` must be empty.
-4. Do NOT translate IDs (category, department, priority, estimated_complexity).
-"""
+    return template.format(
+        categories=categories_str.strip(),
+        departments=departments_str.strip(),
+        priority_rules=priority_rules_str.strip(),
+        batch_context=batch_context
+    )
 
 
 async def classify_request(
@@ -141,7 +132,8 @@ async def classify_request(
     rate_limiter: Any,
     batch_context: str,
     temperature: float = 0.0,
-    max_output_tokens: int = 1024
+    max_output_tokens: int = 1024,
+    prompt_template_path: str = "settings/prompt_template.txt"
 ) -> ProcessingResult:
     """Classify a single request using the Gemini LLM.
 
@@ -170,7 +162,7 @@ async def classify_request(
     """
     request_id = request_data["id"]
     # Build the system prompt with taxonomy context injected dynamically
-    system_prompt = build_system_prompt(taxonomy, batch_context)
+    system_prompt = build_system_prompt(taxonomy, batch_context, prompt_template_path)
     user_prompt = f"""Classify this request:
 ID: {request_id}
 Channel: {request_data['channel']}

@@ -30,11 +30,12 @@ class Settings(BaseSettings):
 
     GOOGLE_API_KEY: str
     INPUT_CSV_PATH: str = "input_requests.csv"
-    MODEL_NAME: str = "gemini-3.5-flash"
+    PROMPT_TEMPLATE_PATH: str = "settings/prompt_template.txt"
+    MODEL_NAME: str = "gemini-3.1-flash-lite"
     TEMPERATURE: float = 0.0
     MAX_OUTPUT_TOKENS: int = 1024
     RPM_LIMIT: int = 15
-    TPM_LIMIT: int = 1000000
+    TPM_LIMIT: int = 250000
     SEMAPHORE_LIMIT: int = 5
     MAX_RETRIES: int = 3
     GOOGLE_SHEETS_CREDENTIALS_PATH: str | None = None

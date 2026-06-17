@@ -13,9 +13,10 @@ async def test_process_single_request_success():
     req = {"id": "REQ-001", "channel": "Slack", "timestamp": "2026-06-08 09:14", "raw_text": "Test"}
     client = MagicMock()
     settings = MagicMock()
-    settings.MODEL_NAME = "gemini-3.5-flash"
+    settings.MODEL_NAME = "gemini-3.1-flash-lite"
     settings.TEMPERATURE = 0.0
     settings.MAX_OUTPUT_TOKENS = 1024
+    settings.PROMPT_TEMPLATE_PATH = "settings/prompt_template.txt"
     
     response_schema = MagicMock()
     taxonomy = {}
@@ -63,6 +64,7 @@ async def test_async_main_archives_output_files(
     with patch("src.main.Settings") as mock_settings_cls:
         mock_settings = MagicMock()
         mock_settings.INPUT_CSV_PATH = "dummy.csv"
+        mock_settings.PROMPT_TEMPLATE_PATH = "settings/prompt_template.txt"
         mock_settings.SEMAPHORE_LIMIT = 5
         mock_settings.RPM_LIMIT = 15
         mock_settings.TPM_LIMIT = 1000000

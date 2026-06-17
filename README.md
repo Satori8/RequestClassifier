@@ -21,7 +21,7 @@
   </a>
 </p>
 
-An asynchronous, highly resilient Python-based CLI service that automatically classifies, structures, and routes incoming internal requests using the state-of-the-art **Google Gemini 3.5 Flash** model and a highly configurable YAML taxonomy.
+An asynchronous, highly resilient Python-based CLI service that automatically classifies, structures, and routes incoming internal requests using the state-of-the-art **Google Gemini 3.1 Flash Lite** model and a highly configurable YAML taxonomy.
 
 ---
 
@@ -51,7 +51,7 @@ graph TD
 ## 🌟 Key Features
 
 1. **Dynamic Pydantic Schema Factory:** Dynamically generates the Pydantic schema (`ClassifiedRequest`) at runtime using Pydantic v2 `Annotated` and `AfterValidator` patterns based on the loaded taxonomy from `settings/taxonomy.yaml`. This is passed directly to Gemini's `response_schema` for 100% API-enforced schema compliance.
-2. **Sliding Window Rate Limiter:** Implements a thread-safe sliding-window RPM (Requests Per Minute) and TPM (Tokens Per Minute) rate limiter that proactively pauses execution and logs warnings when approaching limits to prevent HTTP 429 errors on Gemini's free tier (15 RPM, 1,000,000 TPM limit).
+2. **Sliding Window Rate Limiter:** Implements a thread-safe sliding-window RPM (Requests Per Minute) and TPM (Tokens Per Minute) rate limiter that proactively pauses execution and logs warnings when approaching limits to prevent HTTP 429 errors on Gemini's free tier (15 RPM, 250,000 TPM limit).
 3. **Robust Error Handling & Tenacity Retry:** Retries failed LLM calls up to 3 times with exponential backoff on transient errors (e.g., rate limits, validation errors). If all retries fail, it saves the request with a `processing_error=True` flag and the error details, ensuring no silent drops.
 4. **Progress Checkpointing & Resume:** Maintains a JSON-based progress file (`output/progress.json`) to allow resuming interrupted runs seamlessly without re-processing already-classified requests.
 5. **Asynchronous Orchestration:** Processes requests concurrently using `asyncio.Semaphore(5)` to limit concurrent API calls and optimize speed.
@@ -189,6 +189,51 @@ uv run pytest -v
     ├── test_integrations.py
     └── test_main.py
 ```
+
+---
+
+## 🧠 Обмеження, Граничні випадки та Стратегії запобігання (Limitations & Edge Cases)
+
+У цьому розділі описано технічні виклики, потенційні точки відмови системи та способи їхнього нівелювання.
+
+### 1. Невалідний або непередбачуваний вивід LLM (Invalid LLM Output)
+* **Проблема:** Модель може повернути невалідний JSON або вигадати категорію/департамент, яких немає в таксономії.
+* **Рішення:**
+  * **API-Enforced Schema Compliance:** Ми передаємо динамічно згенеровану схему Pydantic безпосередньо в параметр `response_schema` клієнта Gemini API (разом із `response_mime_type="application/json"`). Це примусово змушує модель повертати JSON, який на 100% відповідає структурі нашої схеми на рівні самого API-движка.
+  * **Валідація «на льоту» та Tenacity Retry:** Якщо валідація все ж провалилася (наприклад, через збій мережі або розбіжність схеми), блок `_call_llm_with_retry` здійснює до **3 повторних спроб** з експоненціальним бек-оффом.
+  * **Graceful Degradation (Без мовчазних втрат):** Якщо всі спроби вичерпано, запис зберігається в `output.json` з прапорцем `processing_error=True` та повним логом помилки. Сервіс не падає, а продовжує обробку черги.
+
+### 2. Великі обсяги даних та ліміти API (Large Volumes & Rate Limits)
+* **Проблема:** При обробці тисяч запитів безкоштовний тарифний план Gemini API швидко поверне помилку HTTP 429 (Too Many Requests), оскільки діє суворе обмеження: **15 RPM** (запитів на хвилину) та **250 000 TPM** (токенів на хвилину).
+* **Рішення:**
+  * **Sliding-Window Rate Limiter:** Створено потокобезпечний та асинхронний лімітер швидкості, який паралельно відстежує витрату лімітів RPM та TPM у кожному ковзному вікні. Якщо ліміт наближається до критичного, сервіс превентивно призупиняє виконання та логує попередження, повністю запобігаючи виникненню HTTP 429.
+  * **Семафор (`asyncio.Semaphore`):** Паралельність обмежена до **5 одночасних запитів**, що оптимізує навантаження на систему та мережу.
+  * **Progress Checkpointing:** Увесь прогрес зберігається в реальному часі в `progress.json`. У разі переривання роботи (наприклад, вимкнення світла або збою хоста) наступний запуск продовжить обробку з останнього неналаштованого запиту.
+
+### 3. Недетермінізм моделей (Non-Determinism)
+* **Проблема:** Оскільки LLM є ймовірнісними моделями, один і той самий запит може быть класифікований по-різному під час різних запусків.
+* **Рішення:**
+  * **Температура `0.0`:** Параметр температури жорстко зафіксовано на значенні `0.0`, що робить вивід максимально детермінованим та повторюваним.
+  * **Суворі Pydantic-валідатори:** Динамічна схема використовує `AfterValidator` для перевірки значень за списками з `taxonomy.yaml`. Навіть якщо модель спробує згенерувати некоректний ID, Pydantic відхилить його на етапі парсингу, ініціюючи повторну спробу.
+
+### 4. Фінансова вартість токенів (Token Cost & Budgeting)
+* **Проблема:** Наразі фінансова вартість токенів (у грошовому еквіваленті) ніяк не обробляється та не обмежується в коді. Оскільки ми відмовилися від батч-обробки та класифікуємо запити поодинці, вартість кожного виклику є невеликою, але при великих обсягах сумарні витрати можуть перевищити очікуваний бюджет.
+* **Рішення / Перспектива:**
+  * **Трекінг токенів:** Ми вже збираємо та зберігаємо точну інформацію про кількість використаних вхідних (`prompt_token_count`) та вихідних (`candidates_token_count`) токенів у `ProcessingResult` та агрегуємо їх в `analytics.json`.
+  * **Механізм розрахунку вартості:** На основі зібраних даних можна легко впровадити модуль розрахунку вартості (наприклад, множачи кількість токенів на офіційні тарифи моделі за 1M токенів).
+  * **Бюджетні ліміти:** У майбутньому можна додати параметри лімітів бюджету на день, сесію або місяць (наприклад, `DAILY_BUDGET_USD=5.00`), при досягненні яких сервіс превентивно зупинятиме роботу, захищаючи від неочікуваних витрат.
+
+---
+
+## 🚀 Перспективи розвитку (What We Would Do Next)
+
+Якби на розробку було виділено більше часу, наступними кроками стали б:
+
+1. **Гаряче перезавантаження таксономії (Dynamic Taxonomy Hot-Reloading):** Автоматичне відстеження змін у файлі `taxonomy.yaml` через `watchdog` та перезавантаження правил класифікації на льоту без перезапуску CLI-сервісу.
+2. **Побудова графа зв'язків (Advanced Dependency Mapping):** Повноцінна детекція та зв'язування дублікатів/пов'язаних запитів (наприклад, зв'язування `REQ-013` -> `REQ-001`) безпосередньо в схемі виводу з можливістю візуалізації у вигляді графа залежностей.
+3. **Локальний AI-движок (Ollama / Local LLM Support):** Додавання підтримки локальних моделей (наприклад, Llama 3 або Mistral через Ollama) як альтернативи Gemini для повної конфіденційності та роботи без підключення до мережі.
+4. **Векторний пошук дублікатів (Vector Semantic Search):** Індексування текстів запитів у векторній базі даних (наприклад, ChromaDB або Qdrant) для миттєвого знаходження семантично схожих запитів у реальному часі перед відправкою в LLM.
+5. **Веб-інтерфейс аналітики (Web Dashboard):** Створення легкого веб-інтерфейсу (наприклад, на Streamlit або FastAPI + Tailwind) для зручного перегляду класифікованих запитів, пошуку, фільтрации та інтерактивних графіків аналітики.
 
 ---
 

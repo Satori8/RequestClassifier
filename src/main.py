@@ -71,7 +71,8 @@ async def process_single_request(
             rate_limiter=rate_limiter,
             batch_context=batch_context,
             temperature=settings.TEMPERATURE,
-            max_output_tokens=settings.MAX_OUTPUT_TOKENS
+            max_output_tokens=settings.MAX_OUTPUT_TOKENS,
+            prompt_template_path=settings.PROMPT_TEMPLATE_PATH
         )
         # Mark progress only on success so failed requests retry on resume
         if not result.processing_error:
