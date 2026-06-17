@@ -1,0 +1,31 @@
+# Ignore all files and folders starting with .
+.*
+
+# Allow .gitignore itself
+!.gitignore
+
+# Allow .env.example
+!.env.example
+
+# Ignore virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Ignore Python cache and bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore generated output files
+output/
+
+# Ignore local environment files
+.env
+.env*.local
+
+# Ignore all markdown files except README.md
+*.md
+**/*.md
+!README.md
