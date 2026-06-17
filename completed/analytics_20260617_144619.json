@@ -1,0 +1,36 @@
+{
+  "summary": {
+    "total_requests": 18,
+    "successfully_processed": 18,
+    "failed_processing": 0,
+    "average_confidence_score": 0.9644,
+    "tokens_used": {
+      "input_tokens": 31569,
+      "output_tokens": 4846,
+      "total_tokens": 36415
+    }
+  },
+  "by_category": {
+    "автоматизація": 8,
+    "питання/консультація": 3,
+    "звіт/аналітика": 3,
+    "баг/підтримка": 2,
+    "поза скоупом": 1,
+    "інтеграція": 1
+  },
+  "by_department": {
+    "маркетинг": 5,
+    "продажі": 1,
+    "фінанси/бухгалтерія": 2,
+    "аналітика": 2,
+    "підтримка": 2,
+    "HR": 1,
+    "адміністративний": 1,
+    "розробка": 1
+  },
+  "by_priority": {
+    "medium": 9,
+    "low": 6,
+    "high": 3
+  }
+}

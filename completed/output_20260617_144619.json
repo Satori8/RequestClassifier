@@ -1,0 +1,352 @@
+[
+  {
+    "id": "REQ-001",
+    "channel": "Slack",
+    "timestamp": "2026-06-08 09:14",
+    "raw_text": "Привіт! Можна якось автоматизувати щотижневий звіт по Google Ads? Зараз руками вивантажую CSV і копіюю в табличку щопонеділка, займає десь годину. Треба основні метрики по кампаніях.",
+    "category": "автоматизація",
+    "target_department": "маркетинг",
+    "priority": "medium",
+    "short_summary": "Автоматизація щотижневого звіту по Google Ads для економії часу на ручному вивантаженні даних.",
+    "requested_actions": [
+      "Налаштувати автоматичне вивантаження даних з Google Ads",
+      "Створити скрипт або інтеграцію для автоматичного заповнення таблиці"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.98,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-002",
+    "channel": "Telegram",
+    "timestamp": "2026-06-08 09:31",
+    "raw_text": "хлопці треба бот",
+    "category": "автоматизація",
+    "target_department": null,
+    "priority": "medium",
+    "short_summary": "Запит на створення бота без уточнення функціоналу.",
+    "requested_actions": [
+      "Уточнити призначення та функціонал бота"
+    ],
+    "needs_clarification": true,
+    "confidence_score": 0.95,
+    "clarification_questions": [
+      "Для яких цілей вам потрібен бот?",
+      "Які саме завдання він має виконувати?",
+      "З якими сервісами чи платформами він має взаємодіяти?"
+    ],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-003",
+    "channel": "Email",
+    "timestamp": "2026-06-08 10:02",
+    "raw_text": "Доброго дня. У відділі продажів накопичується багато транскриптів дзвінків з клієнтами. Хочемо, щоб по кожному дзвінку автоматично формувалося коротке саммарі + список домовленостей, і це падало в PlanFix у картку угоди. Це реально?",
+    "category": "автоматизація",
+    "target_department": "продажі",
+    "priority": "medium",
+    "short_summary": "Автоматизація створення саммарі та списку домовленостей з транскриптів дзвінків у PlanFix.",
+    "requested_actions": [
+      "Налаштувати автоматичну обробку транскриптів дзвінків",
+      "Інтегрувати систему обробки з PlanFix для створення записів у картках угод"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-004",
+    "channel": "Slack",
+    "timestamp": "2026-06-08 10:20",
+    "raw_text": "Питання радше теоретичне: чи можна взагалі за допомогою AI оцінювати якість наших статей у блозі перед публікацією? Поки що нічого впроваджувати не треба, просто цікаво ваша думка.",
+    "category": "питання/консультація",
+    "target_department": "маркетинг",
+    "priority": "low",
+    "short_summary": "Запит на консультацію щодо можливості використання AI для оцінки якості статей у блозі.",
+    "requested_actions": [
+      "Надати експертну думку щодо feasibility оцінки якості контенту за допомогою AI"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 1.0,
+    "clarification_questions": [],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-005",
+    "channel": "Telegram",
+    "timestamp": "2026-06-08 11:05",
+    "raw_text": "ГОРИТЬ. Сьогодні до вечора треба вивантажити список усіх контрагентів з витратами понад 50к за травень, бухгалтерія просить терміново. можете швидко?",
+    "category": "звіт/аналітика",
+    "target_department": "фінанси/бухгалтерія",
+    "priority": "high",
+    "short_summary": "Термінове вивантаження списку контрагентів з витратами понад 50 тис. за травень для бухгалтерії.",
+    "requested_actions": [
+      "Вивантажити дані про контрагентів з витратами > 50к за травень",
+      "Надати звіт бухгалтерії до кінця дня"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 1.0,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-006",
+    "channel": "Email",
+    "timestamp": "2026-06-08 11:40",
+    "raw_text": "Hi team, we need a small service that takes our weekly analytics export from BigQuery and generates a short plain-language summary of the key changes week-over-week. Output ideally in a Google Doc. Хто може взятись?",
+    "category": "автоматизація",
+    "target_department": "аналітика",
+    "priority": "medium",
+    "short_summary": "Створення сервісу для автоматичного формування щотижневого звіту з BigQuery у Google Docs.",
+    "requested_actions": [
+      "Розробити сервіс для обробки даних з BigQuery",
+      "Налаштувати генерацію текстового резюме змін",
+      "Інтегрувати вивантаження результату в Google Docs"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "en"
+  },
+  {
+    "id": "REQ-007",
+    "channel": "Slack",
+    "timestamp": "2026-06-08 12:15",
+    "raw_text": "У нас зламалась автоматизація по інвойсам з Мети — з понеділка нічого не парситься, рахунки висять. Хто це робив? треба полагодити",
+    "category": "баг/підтримка",
+    "target_department": "фінанси/бухгалтерія",
+    "priority": "high",
+    "short_summary": "Зламалася автоматизація парсингу інвойсів з Meta, через що рахунки не обробляються.",
+    "requested_actions": [
+      "Діагностувати причину зупинки парсингу інвойсів з Meta",
+      "Відновити коректну роботу автоматизації"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.98,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-008",
+    "channel": "Telegram",
+    "timestamp": "2026-06-08 13:02",
+    "raw_text": "дякую за вчора, все працює супер 🙌",
+    "category": "баг/підтримка",
+    "target_department": "підтримка",
+    "priority": "low",
+    "short_summary": "Користувач висловив подяку за успішне вирішення попереднього запиту.",
+    "requested_actions": [],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-009",
+    "channel": "Email",
+    "timestamp": "2026-06-08 13:48",
+    "raw_text": "Колеги, в HR хочемо прискорити первинний скринінг резюме на технічні вакансії. Ідея: завантажуємо PDF резюме, на виході — структуровані поля (досвід, стек, відповідність вимогам) і коротка оцінка. Обсяг — десь 30-50 резюме на тиждень.",
+    "category": "автоматизація",
+    "target_department": "HR",
+    "priority": "medium",
+    "short_summary": "Розробка інструменту для автоматичного скринінгу та структурування даних з PDF-резюме для HR-відділу.",
+    "requested_actions": [
+      "Розробити алгоритм для парсингу PDF-резюме",
+      "Налаштувати вилучення структурованих даних (досвід, стек, відповідність)",
+      "Впровадити систему оцінки кандидатів на основі вимог вакансії"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-010",
+    "channel": "Slack",
+    "timestamp": "2026-06-08 14:11",
+    "raw_text": "Можна автоматизувати збір згадок про Netpeak в телеграм-каналах і робити дайджест раз на день? І ще окремо — алерт, якщо згадка негативна. Дві задачі по суті, але обидві про моніторинг.",
+    "category": "автоматизація",
+    "target_department": "маркетинг",
+    "priority": "medium",
+    "short_summary": "Налаштування автоматичного моніторингу згадок бренду Netpeak у Telegram з щоденним дайджестом та сповіщеннями про негатив.",
+    "requested_actions": [
+      "Налаштувати парсинг згадок бренду в Telegram",
+      "Створити механізм формування щоденного дайджесту",
+      "Налаштувати систему сповіщень про негативні згадки"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-011",
+    "channel": "Telegram",
+    "timestamp": "2026-06-08 14:55",
+    "raw_text": "нам би табличку якусь",
+    "category": "звіт/аналітика",
+    "target_department": null,
+    "priority": "low",
+    "short_summary": "Запит на створення таблиці без конкретних деталей.",
+    "requested_actions": [],
+    "needs_clarification": true,
+    "confidence_score": 0.95,
+    "clarification_questions": [
+      "Які саме дані ви хочете бачити в таблиці?",
+      "З якого джерела мають підтягуватися дані?",
+      "Для якого відділу чи цілі потрібна ця таблиця?"
+    ],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-012",
+    "channel": "Email",
+    "timestamp": "2026-06-08 15:30",
+    "raw_text": "Доброго дня! Хотіли б закупити новий потужний ноутбук для рендеру відео в SMM-відділі, бюджет до 80к. Куди подати заявку?",
+    "category": "поза скоупом",
+    "target_department": "адміністративний",
+    "priority": "low",
+    "short_summary": "Запит на закупівлю ноутбука для SMM-відділу.",
+    "requested_actions": [
+      "Надати інформацію про процедуру закупівлі техніки"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 1.0,
+    "clarification_questions": [],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-013",
+    "channel": "Slack",
+    "timestamp": "2026-06-08 16:02",
+    "raw_text": "Привіт. Той самий звіт по Google Ads, що Оля просила в понеділок — мені теж дуже потрібен, я в тій же команді. Можна щоб і мені приходив?",
+    "category": "автоматизація",
+    "target_department": "маркетинг",
+    "priority": "medium",
+    "short_summary": "Користувач просить додати його до розсилки автоматизованого звіту по Google Ads, який вже розробляється для іншого колеги.",
+    "requested_actions": [
+      "Додати користувача до списку отримувачів звіту по Google Ads"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-014",
+    "channel": "Telegram",
+    "timestamp": "2026-06-08 16:40",
+    "raw_text": "є ідея, гляньте https://example.com/some-tool можливо щось схоже зробимо для нас, не горить",
+    "category": "питання/консультація",
+    "target_department": null,
+    "priority": "low",
+    "short_summary": "Запит на оцінку можливості впровадження інструменту, схожого на запропонований за посиланням.",
+    "requested_actions": [
+      "Ознайомитися з функціоналом інструменту за посиланням",
+      "Надати фідбек щодо доцільності розробки аналогічного рішення"
+    ],
+    "needs_clarification": true,
+    "confidence_score": 0.95,
+    "clarification_questions": [
+      "Які саме функції цього інструменту вас зацікавили?",
+      "Для яких бізнес-завдань ви плануєте використовувати подібне рішення?"
+    ],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-015",
+    "channel": "Email",
+    "timestamp": "2026-06-08 17:12",
+    "raw_text": "Команда контенту просить інструмент, який з довгого інтерв'ю (текст 10-15 сторінок) робить 5 коротких постів для соцмереж у нашому tone of voice. Пріоритет середній, треба десь до кінця місяця.",
+    "category": "автоматизація",
+    "target_department": "маркетинг",
+    "priority": "medium",
+    "short_summary": "Розробка інструменту для автоматичного створення 5 постів для соцмереж з великого тексту інтерв'ю з урахуванням tone of voice.",
+    "requested_actions": [
+      "Розробити інструмент для генерації контенту з інтерв'ю",
+      "Налаштувати відповідність tone of voice"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-016",
+    "channel": "Slack",
+    "timestamp": "2026-06-09 09:08",
+    "raw_text": "чат це нормально що в ассистента по базі знань іноді відповіді не зовсім по темі? просто хочу зрозуміти це баг чи так і має бути",
+    "category": "питання/консультація",
+    "target_department": "розробка",
+    "priority": "low",
+    "short_summary": "Користувач запитує, чи є нерелевантні відповіді асистента по базі знань очікуваною поведінкою чи помилкою.",
+    "requested_actions": [
+      "Надати консультацію щодо роботи асистента",
+      "Перевірити налаштування бази знань"
+    ],
+    "needs_clarification": true,
+    "confidence_score": 0.95,
+    "clarification_questions": [
+      "Чи можете ви надати приклад запиту та відповіді, де асистент відповів не по темі?",
+      "Яку саме базу знань використовує асистент?"
+    ],
+    "estimated_complexity": "low",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-017",
+    "channel": "Telegram",
+    "timestamp": "2026-06-09 09:50",
+    "raw_text": "терміново треба інтеграція слака з планфіксом щоб задачі з каналу #support автоматом створювались тікетами. дуже багато ручної роботи зараз",
+    "category": "інтеграція",
+    "target_department": "підтримка",
+    "priority": "high",
+    "short_summary": "Необхідно налаштувати автоматичне створення тікетів у PlanFix на основі повідомлень із каналу #support у Slack.",
+    "requested_actions": [
+      "Налаштувати інтеграцію між Slack та PlanFix",
+      "Створити автоматизацію для перетворення повідомлень каналу #support на тікети"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 1.0,
+    "clarification_questions": [],
+    "estimated_complexity": "medium",
+    "language": "uk"
+  },
+  {
+    "id": "REQ-018",
+    "channel": "Email",
+    "timestamp": "2026-06-09 10:25",
+    "raw_text": "Доброго ранку. Аналітика хоче дашборд, який раз на день підтягує дані з BigQuery і показує аномалії у витратах по підрядниках (різкі стрибки). Бажано з поясненням природною мовою, чому щось виглядає підозріло.",
+    "category": "звіт/аналітика",
+    "target_department": "аналітика",
+    "priority": "medium",
+    "short_summary": "Створення дашборду для моніторингу аномалій у витратах підрядників з BigQuery.",
+    "requested_actions": [
+      "Налаштувати підключення до BigQuery",
+      "Розробити алгоритм виявлення аномалій у витратах",
+      "Створити дашборд з текстовими поясненнями аномалій"
+    ],
+    "needs_clarification": false,
+    "confidence_score": 0.95,
+    "clarification_questions": [],
+    "estimated_complexity": "high",
+    "language": "uk"
+  }
+]
